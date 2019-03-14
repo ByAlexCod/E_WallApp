@@ -36,6 +36,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:minHeight="0dp"
+            android:orientation="vertical"
             app:layout_constraintBottom_toTopOf="@+id/navigation"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -48,10 +49,14 @@
                 android:name="com.google.android.gms.maps.SupportMapFragment"
 
                 android:layout_width="match_parent"
+                android:layout_height="239dp" />
+
+            <ListView
+                android:id="@+id/boardsListView"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
         </LinearLayout>
-
 
     </LinearLayout>
 

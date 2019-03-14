@@ -1,9 +1,11 @@
 package com.andit.e_wall;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -39,7 +41,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.andit.e_wall.data_model.BoardModel;
 import com.dlazaro66.qrcodereaderview.QRCodeReaderView;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMapOptions;
@@ -48,22 +53,31 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.safetynet.SafetyNet;
+import com.google.android.gms.safetynet.SafetyNetApi;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static android.Manifest.permission.CAMERA;
 import static com.andit.e_wall.R.layout.activity_main_page;
 import static com.andit.e_wall.R.layout.map;
 
 
-public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQRCodeReadListener, ActivityCompat.OnRequestPermissionsResultCallback, OnMapReadyCallback {
+public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQRCodeReadListener, ActivityCompat.OnRequestPermissionsResultCallback
+{
     private TextView mTextMessage;
     private LinearLayout layout;
+    private Context act;
     private TextView resp;
+    MainPage ctx;
     private QRCodeReaderView qrCodeReaderView;
 
 
@@ -79,8 +93,8 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
                     mTextMessage.setText(R.string.title_home);
                     return true;
                 case R.id.navigation_dashboard:
-                    Intent it = new Intent(mTextMessage.getContext(), MapPage.class);
-                    startActivity(it);
+                    ToMap tm = new ToMap();
+                    tm.run();
                     return true;
                 case R.id.navigation_notifications:
                     layout.setVisibility(LinearLayout.INVISIBLE);
@@ -129,8 +143,9 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(activity_main_page);
+        ctx = this;
         resp = findViewById(R.id.resp);
-
+        act = getApplication();
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         DSI_height = displayMetrics.heightPixels;
@@ -166,12 +181,22 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
             tt.show();
         }
 
-        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         setAspectRatioTextureView(imageDimension.getHeight(),imageDimension.getWidth());
 
 
     }
+
+    public class ToMap implements  Runnable {
+
+        @Override
+        public void run() {
+            Intent it = new Intent(mTextMessage.getContext(), MapPage.class);
+            startActivity(it);
+        }
+    }
+
 
 
 
@@ -201,7 +226,30 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
 
     @Override
     public void onQRCodeRead(String text, PointF[] points) {
+        ApiHelper helper = new ApiHelper();
+
+        String txt = null;
+        txt = helper.SendQRCodeResult(text, ctx, new ApiRequestListener() {
+            @Override
+            public void apiResult(String token) {
+                String tok = token;
+                Context context = getApplicationContext();
+                SharedPreferences sharedPref = context.getSharedPreferences(
+                        "com.andit.E_WALL", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("token", tok);
+                editor.commit();
+                ToMap a = new ToMap();
+                a.run();
+            }
+        });
+
+        Toast tt = Toast.makeText(ctx, txt, Toast.LENGTH_SHORT);
+        tt.show();
+        qrCodeReaderView.stopCamera();
+
         resp.setText(text);
+
     }
 
     @Override
@@ -220,15 +268,9 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
         qrCodeReaderView.stopCamera();
 
     }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-        // Add a marker in Sydney, Australia, and move the camera.
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
-
+    public interface ApiRequestListener {
+        void apiResult(String token);
     }
+
+
 }
