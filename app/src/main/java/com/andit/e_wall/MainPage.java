@@ -97,8 +97,8 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
                     tm.run();
                     return true;
                 case R.id.navigation_notifications:
-                    layout.setVisibility(LinearLayout.INVISIBLE);
-                    mTextMessage.setText(R.string.title_notifications);
+                    ToArPage ap = new ToArPage();
+                    ap.run();
                     return true;
             }
             return false;
@@ -117,7 +117,7 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case 1: {
+            case 25: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -125,12 +125,14 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
                     // contacts-related task you need to do.
                 } else {
                     ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.CAMERA},1
+                            new String[]{Manifest.permission.CAMERA},25
                             );
 
                 }
                 return;
             }
+
+
 
             // other 'case' lines to check for other
             // permissions this app might request.
@@ -159,6 +161,12 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
 
         ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.CAMERA},25
+        );
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},2999
+        );
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},25555
         );
 
 
@@ -193,6 +201,17 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
         @Override
         public void run() {
             Intent it = new Intent(mTextMessage.getContext(), MapPage.class);
+            startActivity(it);
+        }
+    }
+
+    public class ToArPage implements  Runnable {
+
+        @Override
+        public void run() {
+            Intent it = new Intent(mTextMessage.getContext(), ARPage.class);
+            it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
             startActivity(it);
         }
     }

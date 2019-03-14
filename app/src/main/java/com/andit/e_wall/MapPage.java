@@ -231,6 +231,8 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
                 case R.id.navigation_dashboard:
                     return true;
                 case R.id.navigation_notifications:
+                    Intent iti = new Intent(findViewById(R.id.map_view).getContext(), ARPage.class);
+                    startActivity(iti);
 
                     return true;
             }

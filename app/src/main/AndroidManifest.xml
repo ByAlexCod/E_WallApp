@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.andit.e_wall">
     <uses-feature android:name="android.hardware.camera"
         android:required="true" />
@@ -9,21 +10,32 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-feature android:name="android.hardware.camera.ar" />
+
 
 
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:largeHeap="true"
+        tools:ignore="GoogleAppIndexingWarning">
+        <meta-data android:name="com.google.ar.core" android:value="required" />
+        <activity
+            android:name="com.andit.e_wall.ARPage"
+            android:label="@string/app_name"
+            android:configChanges="orientation|screenSize"
+            android:exported="true"/>
         <activity
             android:name=".MainPage"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
             >
+
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -46,6 +58,8 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAXt8MlZJwP9i1ti-A0tQyNPlD-mM7ZP4A"/>
+
+
     </application>
 
 

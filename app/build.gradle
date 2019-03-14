@@ -27,6 +27,10 @@ dependencies {
     implementation group: 'com.android.support', name: 'appcompat-v7', version: '28.0.0'
     implementation 'com.facebook.stetho:stetho:1.5.0'
     implementation 'com.facebook.stetho:stetho-okhttp3:1.5.0'
+    implementation "com.google.ar.sceneform:core:1.0.0"
+    implementation "com.google.ar.sceneform.ux:sceneform-ux:1.0.0"
+
+    implementation 'com.github.appoly:ARCore-Location:1.0.5'
     implementation 'com.dlazaro66.qrcodereaderview:qrcodereaderview:2.0.3'
     implementation  group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.13.1'
     implementation group: 'com.android.support', name: 'design', version: '28.0.0'
@@ -40,3 +44,11 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'com.google.android.gms:play-services-maps:16.1.0'
 }
+
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+    maven { url 'https://jitpack.io' }
+}
+apply plugin: 'com.google.ar.sceneform.plugin'
