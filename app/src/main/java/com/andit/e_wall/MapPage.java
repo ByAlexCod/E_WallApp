@@ -8,6 +8,10 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
@@ -23,11 +27,13 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.andit.e_wall.data_model.BoardModel;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
@@ -54,7 +60,9 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
     GoogleMap map;
     List<BoardModel> boardsListing;
     LatLng latLng;
+
     private FusedLocationProviderClient fusedLocationClient;
+
 
 
     @Override
@@ -64,6 +72,7 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.setSelectedItemId(R.id.navigation_dashboard);
+
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -90,7 +99,6 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
 
 
     }
-
 
 
 
@@ -207,6 +215,7 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
                             CustomAdapter customAdapter = new CustomAdapter(boardsList, latLng ,boardsListView.getContext().getApplicationContext());
 
 
+
                             boardsListView.setAdapter(customAdapter);                     }
                     }
                 });
@@ -235,21 +244,7 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
 
     }
 
-    public class MapRealoader implements Runnable {
-        List<BoardModel> boardsList;
-        public MapRealoader(List<BoardModel> boards){
-            boardsList = boards;
-        }
-        @Override
-        public void run() {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
 
-                }
-            });
-        }
-    }
 
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -264,6 +259,8 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
                 case R.id.navigation_dashboard:
                     return true;
                 case R.id.navigation_notifications:
+
+
 
                     return true;
             }

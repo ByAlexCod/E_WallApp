@@ -1,5 +1,10 @@
 package com.andit.e_wall;
 
+import android.graphics.Point;
+
+import com.andit.e_wall.data_model.Coord;
+import com.google.android.gms.maps.model.LatLng;
+
 public class MapHelper {
 
     public static double distance(double lat1, double lat2, double lon1,
@@ -21,4 +26,19 @@ public class MapHelper {
 
         return Math.sqrt(distance);
     }
+
+    public static Coord TranslatePlan(double currentCompass, LatLng currentLocation, LatLng pointLocation){
+        if(currentCompass > 180) {
+            currentCompass = -1*(360-currentCompass);
+        }
+        double xm = distance(currentLocation.latitude, pointLocation.latitude, currentLocation.longitude, currentLocation.longitude, 1, 1);
+        double ym = distance(currentLocation.latitude, currentLocation.latitude, currentLocation.longitude, pointLocation.longitude, 1, 1);
+
+        double xp = xm*(Math.cos(Math.toRadians(currentCompass))) - ym*(Math.sin(Math.toRadians(currentCompass)));
+        double yp = ym*(Math.cos(Math.toRadians(currentCompass))) + xm*(Math.sin(Math.toRadians(currentCompass)));
+
+        return new Coord(xp, yp);
+
+    }
 }
+
