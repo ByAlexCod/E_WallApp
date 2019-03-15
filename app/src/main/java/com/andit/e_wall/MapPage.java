@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -25,6 +26,13 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.andit.e_wall.data_model.BoardModel;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -34,6 +42,9 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -42,22 +53,47 @@ import java.util.Random;
 public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
     GoogleMap map;
     List<BoardModel> boardsListing;
+    LatLng latLng;
+    private FusedLocationProviderClient fusedLocationClient;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_page);
-        CheckPermissions();
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
         navigation.setSelectedItemId(R.id.navigation_dashboard);
 
-        SupportMapFragment mapFragment =
-                (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_view);
-        mapFragment.getMapAsync(this);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            CheckPermissions();
+            return;
+        }
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+                            SupportMapFragment mapFragment =
+                                    (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_view);
+                            mapFragment.getMapAsync(MapPage.this::onMapReady);                        }
+                    }
+                });
+
+
+
 
 
     }
+
+
+
+
 
     @ColorInt
     public static int adjustAlpha(@ColorInt int color, float factor) {
@@ -110,19 +146,13 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
                             return;
                         }
 
-                        LocationManager locationManager = (LocationManager)
-                                getSystemService(Context.LOCATION_SERVICE);
-                        Criteria criteria = new Criteria();
 
-                        Location location = locationManager.getLastKnownLocation(locationManager
-                                .getBestProvider(criteria, false));
 
                         UpdateDistances(boardsList);
                         handler.post(runnable);
 
-                        LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
 
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(ll, 18.0f));
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18.0f));
                     });
                 }
             });
@@ -131,6 +161,7 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
         }
 
     }
+
     private Handler handler = new Handler();
 
     private Runnable runnable = new Runnable() {
@@ -144,46 +175,47 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
     };
 
 
-
     public interface ApiRequestListener {
         void apiResult(List<BoardModel> boardsList);
     }
 
-    public void UpdateDistances(List<BoardModel> boardsList){
-        LocationManager locationManager = (LocationManager)
-                getSystemService(Context.LOCATION_SERVICE);
-        Criteria criteria = new Criteria();
+    public void UpdateDistances(List<BoardModel> boardsList) {
 
-        @SuppressLint("MissingPermission") Location location = locationManager.getLastKnownLocation(locationManager
-                .getBestProvider(criteria, false));
-        double latitude = location.getLatitude();
-        double longitude = location.getLongitude();
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            CheckPermissions();
+            return;
+        }
+
+
+
         ListView boardsListView =findViewById(R.id.boardsListView);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
-        LatLng ll = new LatLng(latitude, longitude);
-        CustomAdapter customAdapter = new CustomAdapter(boardsList, ll ,boardsListView.getContext().getApplicationContext());
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            CheckPermissions();
+            return;
+        }
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+                            CustomAdapter customAdapter = new CustomAdapter(boardsList, latLng ,boardsListView.getContext().getApplicationContext());
 
 
-        boardsListView.setAdapter(customAdapter);
+                            boardsListView.setAdapter(customAdapter);                     }
+                    }
+                });
+
+
 
     }
 
     public void CheckPermissions(){
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_COARSE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                    Manifest.permission.ACCESS_COARSE_LOCATION)) {
-
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
-                        2);
-
-            }
-        } else {
-        }
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -199,6 +231,7 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
             }
         } else {
         }
+
 
     }
 
