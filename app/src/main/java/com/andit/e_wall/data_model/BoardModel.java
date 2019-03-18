@@ -1,5 +1,7 @@
 package com.andit.e_wall.data_model;
 
+import java.util.List;
+
 public class BoardModel {
     public float getLatitude() {
         return latitude;
@@ -39,4 +41,14 @@ public class BoardModel {
 
     float latitude;
     float longitude;
+
+    public List<MessageModel> getMessagesList() {
+        return messagesList;
+    }
+
+    public void setMessagesList(List<MessageModel> messagesList) {
+        this.messagesList = messagesList;
+    }
+
+    private List<MessageModel> messagesList;
 }

@@ -27,15 +27,15 @@ public class MapHelper {
         return Math.sqrt(distance);
     }
 
-    public static Coord TranslatePlan(double currentCompass, LatLng currentLocation, LatLng pointLocation){
+    public static Coord TranslatePlan(float currentCompass, LatLng currentLocation, LatLng pointLocation){
         if(currentCompass > 180) {
             currentCompass = -1*(360-currentCompass);
         }
-        double xm = distance(currentLocation.latitude, pointLocation.latitude, currentLocation.longitude, currentLocation.longitude, 1, 1);
-        double ym = distance(currentLocation.latitude, currentLocation.latitude, currentLocation.longitude, pointLocation.longitude, 1, 1);
+        float xm = (float) distance(currentLocation.latitude, pointLocation.latitude, currentLocation.longitude, currentLocation.longitude, 1, 1);
+        float ym = (float) distance(currentLocation.latitude, currentLocation.latitude, currentLocation.longitude, pointLocation.longitude, 1, 1);
 
-        double xp = xm*(Math.cos(Math.toRadians(currentCompass))) - ym*(Math.sin(Math.toRadians(currentCompass)));
-        double yp = ym*(Math.cos(Math.toRadians(currentCompass))) + xm*(Math.sin(Math.toRadians(currentCompass)));
+        float xp = (float) (xm*(Math.cos(Math.toRadians(currentCompass))) - ym*(Math.sin(Math.toRadians(currentCompass))));
+        float yp = (float) (ym*(Math.cos(Math.toRadians(currentCompass))) + xm*(Math.sin(Math.toRadians(currentCompass))));
 
         return new Coord(xp, yp);
 

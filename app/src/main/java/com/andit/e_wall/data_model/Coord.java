@@ -1,28 +1,28 @@
 package com.andit.e_wall.data_model;
 
 public class Coord {
-    double x;
-    double y;
+    float x;
+    float y;
 
 
-    public Coord(double x, double y){
+    public Coord(float x, float y){
         setX(x);
         setY(y);
     }
 
-    public double getX() {
+    public float getX() {
         return x;
     }
 
-    public void setX(double x) {
+    public void setX(float x) {
         this.x = x;
     }
 
-    public double getY() {
+    public float getY() {
         return y;
     }
 
-    public void setY(double y) {
+    public void setY(float y) {
         this.y = y;
     }
 

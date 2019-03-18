@@ -23,6 +23,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Layout;
@@ -97,8 +98,8 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
                     tm.run();
                     return true;
                 case R.id.navigation_notifications:
-                    layout.setVisibility(LinearLayout.INVISIBLE);
-                    mTextMessage.setText(R.string.title_notifications);
+                    Intent it = new Intent(MainPage.this, CalibrationPage.class);
+                    startActivity(it);
                     return true;
             }
             return false;
@@ -117,15 +118,20 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case 1: {
+            case 25: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
+                    if(!getIntent().getBooleanExtra("restarted", false)){
+                        Intent intent = getIntent();
+                        finish();
+                        intent.putExtra("restarted", true);
+                        startActivity(intent);
+                    }
+
                 } else {
                     ActivityCompat.requestPermissions(this,
-                            new String[]{Manifest.permission.CAMERA},1
+                            new String[]{Manifest.permission.CAMERA},26
                             );
 
                 }
@@ -157,9 +163,14 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
         layout = findViewById(R.id.QRLayout);
         layout.setVisibility(LinearLayout.VISIBLE);
 
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.CAMERA},25
-        );
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},25
+            );
+        }
+
+
 
 
 

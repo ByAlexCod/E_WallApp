@@ -1,12 +1,6 @@
 package com.andit.e_wall;
 
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Credentials;
-import android.telecom.Call;
 import android.util.Log;
-import android.view.View;
 
 import com.andit.e_wall.data_model.BoardModel;
 import com.andit.e_wall.data_model.PathModel;
@@ -17,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.List;
 
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -92,4 +85,31 @@ public class ApiHelper {
         });
     }
 
+    public void getBoardMessages(String token, String boardId, ARPage.ApiRequestMessageList req) throws UnsupportedEncodingException {
+        OkHttpClient client = new OkHttpClient();
+
+        String url = "http://192.168.42.94:5000/api/paths/entry/use/messages/" + boardId + "/" + URLEncoder.encode(token,"UTF-8");
+
+
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+        client.newCall(request).enqueue(new Callback() {
+
+            @Override
+            public void onFailure(okhttp3.Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(okhttp3.Call call, Response response) throws IOException {
+                ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+                ObjectReader reader = objectMapper.reader().forType(BoardModel.class);
+                BoardModel rere = reader.readValue(response.body().string());
+                Log.i("bug254", rere.getName());
+                req.apiResult(rere.getMessagesList(), rere);
+            }
+        });
+    }
 }

@@ -27,6 +27,8 @@ dependencies {
     implementation group: 'com.android.support', name: 'appcompat-v7', version: '28.0.0'
     implementation 'com.facebook.stetho:stetho:1.5.0'
     implementation 'com.facebook.stetho:stetho-okhttp3:1.5.0'
+    implementation "com.google.ar.sceneform.ux:sceneform-ux:1.7.0"
+
     implementation 'com.dlazaro66.qrcodereaderview:qrcodereaderview:2.0.3'
     implementation  group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.13.1'
     implementation 'com.google.android.gms:play-services-location:16.0.0'
@@ -41,3 +43,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'com.google.android.gms:play-services-maps:16.1.0'
 }
+apply plugin: 'com.google.ar.sceneform.plugin'
+

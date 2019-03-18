@@ -25,6 +25,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -216,7 +218,17 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
 
 
 
-                            boardsListView.setAdapter(customAdapter);                     }
+                            boardsListView.setAdapter(customAdapter);
+                            boardsListView.setOnItemClickListener((parent, view, position, id)-> {
+                                BoardModel board = customAdapter.getById(position);
+                                Intent it = new Intent(MapPage.this, ARPage.class);
+                                it.putExtra("boardId", board.getBoardId());
+                                it.putExtra("latlng", latLng.latitude + ";" + latLng.longitude);
+
+                                startActivity(it);
+
+                            });
+                        }
                     }
                 });
 

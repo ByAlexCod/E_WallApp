@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-feature android:name="android.hardware.camera.ar" android:required="true"/>
 
 
 
@@ -19,6 +20,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <meta-data android:name="com.google.ar.core" android:value="required" />
+
         <activity
             android:name=".MainPage"
             android:label="@string/app_name"
@@ -46,6 +49,9 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAXt8MlZJwP9i1ti-A0tQyNPlD-mM7ZP4A"/>
+        <activity android:name=".CalibrationPage" android:screenOrientation="portrait"/>
+        <activity android:name=".ARPage" />
+
     </application>
 
 
