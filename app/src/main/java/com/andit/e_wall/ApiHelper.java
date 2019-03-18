@@ -1,5 +1,6 @@
 package com.andit.e_wall;
 
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.andit.e_wall.data_model.BoardModel;
@@ -18,19 +19,23 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class ApiHelper {
+    /*to controller */
+    public static String baseAPIUrl = "http://192.168.42.94:5000/api";
     private Runnable callback;
-    public ApiHelper(Runnable callbackMethod){
+
+    public ApiHelper(Runnable callbackMethod) {
         callback = callbackMethod;
     }
-    public ApiHelper(){
+
+    public ApiHelper() {
     }
 
-    public String SendQRCodeResult(String qrresult, MainPage ctx, MainPage.ApiRequestListener req)  {
+    public String SendQRCodeResult(String qrresult, AppCompatActivity ctx, MainPage.ApiRequestListener req) {
         OkHttpClient client = new OkHttpClient();
 
         String url = null;
         try {
-            url = "http://192.168.42.94:5000/api/paths/invitation/use/"+ URLEncoder.encode(qrresult, "UTF-8");
+            url = baseAPIUrl + "/paths/invitation/use/" + URLEncoder.encode(qrresult, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -52,7 +57,7 @@ public class ApiHelper {
             }
 
         });
-        return  "registered, go to map";
+        return "registered, go to map";
 
 
     }
@@ -60,8 +65,7 @@ public class ApiHelper {
     public void getPathBoards(String token, MapPage.ApiRequestListener req) throws UnsupportedEncodingException {
         OkHttpClient client = new OkHttpClient();
 
-        String url = "http://192.168.42.94:5000/api/paths/entry/use/token/" + URLEncoder.encode(token,"UTF-8");
-
+        String url = baseAPIUrl + "/paths/entry/use/token/" + URLEncoder.encode(token, "UTF-8");
 
         Request request = new Request.Builder()
                 .url(url)
@@ -88,8 +92,7 @@ public class ApiHelper {
     public void getBoardMessages(String token, String boardId, ARPage.ApiRequestMessageList req) throws UnsupportedEncodingException {
         OkHttpClient client = new OkHttpClient();
 
-        String url = "http://192.168.42.94:5000/api/paths/entry/use/messages/" + boardId + "/" + URLEncoder.encode(token,"UTF-8");
-
+        String url = baseAPIUrl + "/paths/entry/use/messages/" + boardId + "/" + URLEncoder.encode(token, "UTF-8");
 
         Request request = new Request.Builder()
                 .url(url)

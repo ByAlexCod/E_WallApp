@@ -1,75 +1,31 @@
 package com.andit.e_wall;
 
 import android.Manifest;
-import android.app.Activity;
-import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PointF;
-import android.hardware.Camera;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.camera2.CameraManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
-import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Layout;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Size;
-import android.util.SparseArray;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
-import com.andit.e_wall.data_model.BoardModel;
 import com.dlazaro66.qrcodereaderview.QRCodeReaderView;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.CommonStatusCodes;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.GoogleMapOptions;
-import com.google.android.gms.maps.MapView;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.safetynet.SafetyNet;
-import com.google.android.gms.safetynet.SafetyNetApi;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.Executor;
-
-import static android.Manifest.permission.CAMERA;
 import static com.andit.e_wall.R.layout.activity_main_page;
-import static com.andit.e_wall.R.layout.map;
 
 
 public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQRCodeReadListener, ActivityCompat.OnRequestPermissionsResultCallback
@@ -78,7 +34,7 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
     private LinearLayout layout;
     private Context act;
     private TextView resp;
-    MainPage ctx;
+    AppCompatActivity ctx;
     private QRCodeReaderView qrCodeReaderView;
 
 
@@ -138,8 +94,6 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
                 return;
             }
 
-            // other 'case' lines to check for other
-            // permissions this app might request.
         }
     }
     private Size imageDimension;
@@ -175,16 +129,7 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
 
 
         qrCodeReaderView = findViewById(R.id.qrdecoderview);
-        qrCodeReaderView.setOnQRCodeReadListener(this);
-
-        // Use this function to enable/disable decoding
-        qrCodeReaderView.setQRDecodingEnabled(true);
-
-        // Use this function to change the autofocus interval (default is 5 secs)
-        qrCodeReaderView.setAutofocusInterval(2000L);
-
-        // Use this function to set front camera preview
-        qrCodeReaderView.setBackCamera();
+        QRCodeSetup();
 
         PackageManager packageManager = layout.getContext().getPackageManager();
         if(!packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA)){
@@ -197,6 +142,19 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
         setAspectRatioTextureView(imageDimension.getHeight(),imageDimension.getWidth());
 
 
+    }
+
+    private void QRCodeSetup() {
+        qrCodeReaderView.setOnQRCodeReadListener(this);
+
+        // Use this function to enable/disable decoding
+        qrCodeReaderView.setQRDecodingEnabled(true);
+
+        // Use this function to change the autofocus interval (default is 5 secs)
+        qrCodeReaderView.setAutofocusInterval(2000L);
+
+        // Use this function to set front camera preview
+        qrCodeReaderView.setBackCamera();
     }
 
     public class ToMap implements  Runnable {

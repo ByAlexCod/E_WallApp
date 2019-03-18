@@ -35,8 +35,10 @@ import android.widget.Toast;
 import com.andit.e_wall.data_model.BoardModel;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
@@ -50,6 +52,7 @@ import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -62,6 +65,7 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
     GoogleMap map;
     List<BoardModel> boardsListing;
     LatLng latLng;
+    boolean mapInit = false;
 
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -82,19 +86,42 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
             CheckPermissions();
             return;
         }
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+        LocationRequest locationRequest = LocationRequest.create();
+
+
+
+
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+                new LocationCallback(){
                     @Override
-                    public void onSuccess(Location location) {
+                    public void onLocationResult(LocationResult location) {
+                        if (location == null) {
+                            return;
+                        }
                         // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                        if (location != null && !mapInit) {
+                            latLng = new LatLng(location.getLastLocation().getLatitude(), location.getLastLocation().getLongitude());
 
                             SupportMapFragment mapFragment =
                                     (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_view);
-                            mapFragment.getMapAsync(MapPage.this::onMapReady);                        }
-                    }
-                });
+                            mapFragment.getMapAsync(MapPage.this::onMapReady);
+                            mapInit = true;
+                        }
+                    };
+
+
+                },
+                null /* Looper */).addOnCompleteListener(new OnCompleteListener<Void>() {
+
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                Log.i(":)",""+task.isSuccessful());
+            }
+        });
+
+
+
+
 
 
 

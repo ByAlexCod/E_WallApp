@@ -20,9 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Surface;
-import android.view.View;
 import android.widget.ArrayAdapter;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,20 +29,16 @@ import com.andit.e_wall.data_model.BoardModel;
 import com.andit.e_wall.data_model.Coord;
 import com.andit.e_wall.data_model.MessageModel;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.ar.core.Anchor;
 import com.google.ar.core.Pose;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.ViewRenderable;
-import com.google.ar.sceneform.rendering.ViewSizer;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -89,77 +83,7 @@ public class ARPage extends AppCompatActivity {
             ap.getBoardMessages(token, String.valueOf(getIntent().getIntExtra("boardId", 0)), new ApiRequestMessageList() {
                 @Override
                 public void apiResult(List<MessageModel> messages, BoardModel boardModel) {
-                    arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
-                    arFragment.onCreate(savedInstanceState);
-
-
-                    runOnUiThread(() -> {
-                        List<String> strModels =  messages.stream().map(it -> it.getMessage()).collect(Collectors.toList());
-
-
-
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(ARPage.this,
-                                    android.R.layout.simple_list_item_1, strModels);
-
-
-
-                        ViewRenderable.builder()
-                                .setView(ARPage.this, R.layout.ar_overlay)
-                                .build()
-                                .thenAccept(renderable -> {
-
-                                    rendera = renderable;
-
-                                    ListView listMessages = rendera.getView().findViewById(R.id._messagesList);
-                                    listMessages.setAdapter(adapter);
-                                })
-                                .exceptionally(
-                                        throwable -> {
-                                            Toast toast =
-                                                    Toast.makeText(ARPage.this, "Unable to load andy renderable", Toast.LENGTH_LONG);
-                                            toast.setGravity(Gravity.CENTER, 0, 0);
-                                            toast.show();
-                                            return null;
-                                        });
-                    });
-
-                    arFragment.getArSceneView().getScene().addOnUpdateListener((frameTime) -> {
-                        try {
-                            if (!poped) {
-                                float orientation = currentBearing;
-
-                                                    try {
-
-
-                                                        Coord point = MapHelper.TranslatePlan(orientation, startLoc, new LatLng(startLoc.latitude, startLoc.longitude));
-                                                        poped = true;
-                                                        Anchor anchora = arFragment.getArSceneView().getSession().createAnchor(Pose.makeTranslation(0f, 0f, 0f));
-                                                        AnchorNode anchorNode1 = new AnchorNode(anchora);
-                                                        anchorNode1.setParent(arFragment.getArSceneView().getScene());
-
-                                                        // Create the transformable andy and add it to the anchor.
-                                                        TransformableNode andy1 = new TransformableNode(arFragment.getTransformationSystem());
-
-                                                        andy1.setParent(anchorNode1);
-                                                        andy1.setWorldPosition(new Vector3(point.getX(), 0, point.getY() - 3f));
-
-
-                                                        andy1.setRenderable(rendera);
-                                                        andy1.select();
-                                                    } catch (Exception e) {
-                                                        Log.e("ExceptionAndit", e.getMessage(), e);
-                                                        poped = false;
-                                                    }
-
-                                            }
-
-
-
-                        } catch (Exception e) {
-                            poped = false;
-                            Log.e("Normal", "Normal", e);
-                        }
-                    });
+                    InitAr(messages, savedInstanceState, boardModel);
 
 
 
@@ -173,6 +97,78 @@ public class ARPage extends AppCompatActivity {
 
 
 
+    }
+
+    private void InitAr(List<MessageModel> messages, Bundle savedInstanceState, BoardModel boardModel) {
+        arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
+        arFragment.onCreate(savedInstanceState);
+
+
+        RenderableSet(messages);
+
+        UpdateOnFragment(boardModel);
+    }
+
+    private void UpdateOnFragment(BoardModel boardModel) {
+        arFragment.getArSceneView().getScene().addOnUpdateListener((frameTime) -> {
+            try {
+                if (!poped) {
+                    arFragment.getPlaneDiscoveryController().hide();
+                    float orientation = currentBearing;
+
+                                        try {
+
+
+                                            Coord point = MapHelper.TranslatePlan(orientation, startLoc, new LatLng(boardModel.getLatitude(), boardModel.getLongitude()));
+                                            poped = true;
+                                            Anchor anchora = arFragment.getArSceneView().getSession().createAnchor(Pose.makeTranslation(0f, 0f, 0f));
+                                            AnchorNode anchorNode1 = new AnchorNode(anchora);
+                                            anchorNode1.setParent(arFragment.getArSceneView().getScene());
+                                            TransformableNode andy1 = new TransformableNode(arFragment.getTransformationSystem());
+                                            andy1.setParent(anchorNode1);
+                                            andy1.setWorldPosition(new Vector3(point.getX(), 0, point.getY() - 3f));
+                                            andy1.setRenderable(rendera);
+                                            andy1.select();
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            poped = false;
+                                        }
+
+                                }
+
+
+
+            } catch (Exception e) {
+                poped = false;
+                Log.e("Normal", "Normal", e);
+            }
+        });
+    }
+
+    private void RenderableSet(List<MessageModel> messages) {
+        runOnUiThread(() -> {
+            List<String> strModels =  messages.stream().map(it -> it.getMessage()).collect(Collectors.toList());
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(ARPage.this,
+                        android.R.layout.simple_list_item_1, strModels);
+
+            ViewRenderable.builder()
+                    .setView(ARPage.this, R.layout.ar_overlay)
+                    .build()
+                    .thenAccept(renderable -> {
+                        rendera = renderable;
+                        ListView listMessages = rendera.getView().findViewById(R.id._messagesList);
+                        listMessages.setAdapter(adapter);
+                    })
+                    .exceptionally(
+                            throwable -> {
+                                Toast toast =
+                                        Toast.makeText(ARPage.this, "Unable to load andy renderable", Toast.LENGTH_LONG);
+                                toast.setGravity(Gravity.CENTER, 0, 0);
+                                toast.show();
+                                return null;
+                            });
+        });
     }
 
 
