@@ -20,6 +20,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Surface;
+import android.view.View;
+import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -34,6 +36,8 @@ import com.google.ar.core.Anchor;
 import com.google.ar.core.Pose;
 import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.math.Vector3;
+import com.google.ar.sceneform.rendering.Color;
+import com.google.ar.sceneform.rendering.MaterialFactory;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
@@ -57,6 +61,7 @@ public class ARPage extends AppCompatActivity {
     float currentBearing;
     private LatLng startLoc;
     private float[] mMagnetic;
+    BoardModel currentBoard;
     private FusedLocationProviderClient fusedLocationClient;
 
 
@@ -69,6 +74,13 @@ public class ARPage extends AppCompatActivity {
         if (!checkIsSupportedDeviceOrFinish(this)) {
             return;
         }
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        try
+        {
+            this.getSupportActionBar().hide();
+        }
+        catch (NullPointerException e){}
         SharedPreferences prefs = this.getSharedPreferences("com.andit.E_WALL", Context.MODE_PRIVATE);
         String token = prefs.getString("token", null);
 
@@ -110,6 +122,7 @@ public class ARPage extends AppCompatActivity {
     }
 
     private void UpdateOnFragment(BoardModel boardModel) {
+        currentBoard = boardModel;
         arFragment.getArSceneView().getScene().addOnUpdateListener((frameTime) -> {
             try {
                 if (!poped) {
@@ -119,14 +132,17 @@ public class ARPage extends AppCompatActivity {
                                         try {
 
 
+                                           // Coord point = MapHelper.TranslatePlan(orientation, startLoc, new LatLng(boardModel.getLatitude(), boardModel.getLongitude()));
                                             Coord point = MapHelper.TranslatePlan(orientation, startLoc, new LatLng(boardModel.getLatitude(), boardModel.getLongitude()));
+
+
                                             poped = true;
                                             Anchor anchora = arFragment.getArSceneView().getSession().createAnchor(Pose.makeTranslation(0f, 0f, 0f));
                                             AnchorNode anchorNode1 = new AnchorNode(anchora);
                                             anchorNode1.setParent(arFragment.getArSceneView().getScene());
                                             TransformableNode andy1 = new TransformableNode(arFragment.getTransformationSystem());
                                             andy1.setParent(anchorNode1);
-                                            andy1.setWorldPosition(new Vector3(point.getX(), 0, point.getY() - 3f));
+                                            andy1.setWorldPosition(new Vector3(point.getX() , 0,point.getY() * -1f ));
                                             andy1.setRenderable(rendera);
                                             andy1.select();
                                         } catch (Exception e) {
@@ -155,9 +171,14 @@ public class ARPage extends AppCompatActivity {
             ViewRenderable.builder()
                     .setView(ARPage.this, R.layout.ar_overlay)
                     .build()
+
                     .thenAccept(renderable -> {
+                        MaterialFactory.makeTransparentWithColor(renderable.getView().getContext(), new Color());
+                        View view = renderable.getView();
                         rendera = renderable;
                         ListView listMessages = rendera.getView().findViewById(R.id._messagesList);
+                        TextView boardsName = view.findViewById(R.id._boardNameAr);
+                        boardsName.setText(currentBoard.getName());
                         listMessages.setAdapter(adapter);
                     })
                     .exceptionally(

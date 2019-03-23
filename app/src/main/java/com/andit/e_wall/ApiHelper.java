@@ -20,7 +20,7 @@ import okhttp3.Response;
 
 public class ApiHelper {
     /*to controller */
-    public static String baseAPIUrl = "http://192.168.42.94:5000/api";
+    public static String baseAPIUrl = "http://82.230.245.98/api";
     private Runnable callback;
 
     public ApiHelper(Runnable callbackMethod) {
@@ -70,23 +70,28 @@ public class ApiHelper {
         Request request = new Request.Builder()
                 .url(url)
                 .build();
-        client.newCall(request).enqueue(new Callback() {
+        try {
+            client.newCall(request).enqueue(new Callback() {
 
-            @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
+                @Override
+                public void onFailure(okhttp3.Call call, IOException e) {
 
-            }
+                }
 
-            @Override
-            public void onResponse(okhttp3.Call call, Response response) throws IOException {
-                ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                @Override
+                public void onResponse(okhttp3.Call call, Response response) throws IOException {
+                    ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-                ObjectReader reader = objectMapper.reader().forType(PathModel.class);
-                PathModel rere = reader.readValue(response.body().string());
-                Log.i("bug254", rere.getPathName());
-                req.apiResult(rere.getBoardsList());
-            }
-        });
+                    ObjectReader reader = objectMapper.reader().forType(PathModel.class);
+                    PathModel rere = reader.readValue(response.body().string());
+                    Log.i("bug254", rere.getPathName());
+                    req.apiResult(rere.getBoardsList());
+                }
+            });
+        } catch(Exception e){
+            e.printStackTrace();
+            req.apiResult(null);
+        }
     }
 
     public void getBoardMessages(String token, String boardId, ARPage.ApiRequestMessageList req) throws UnsupportedEncodingException {

@@ -15,6 +15,11 @@
         tools:ignore="MissingConstraints">
 
 
+        <include
+            layout="@layout/top_bar"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
         <TextView
             android:id="@+id/message"
             android:layout_width="match_parent"
@@ -31,12 +36,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.021" />
-
-        <TextView
-            android:id="@+id/compass"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="compass" />
 
         <LinearLayout
             android:layout_width="match_parent"

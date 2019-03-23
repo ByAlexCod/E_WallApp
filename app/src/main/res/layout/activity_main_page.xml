@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainPage">
+    tools:context=".MainPage"
+    android:orientation="vertical"
+    >
+
+    <include
+        layout="@layout/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:layout_editor_absoluteY="409dp" />
 
     <TextView
         android:id="@+id/message"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_width="wrap_content"
         android:fontFamily="sans-serif-smallcaps"
         android:text="@string/title_home"
         android:textAlignment="center"
@@ -25,40 +33,51 @@
         app:layout_constraintVertical_bias="0.021" />
 
     <android.support.constraint.ConstraintLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="0dp"
+        android:orientation="vertical"
+
         app:layout_constraintBottom_toTopOf="@+id/navigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/message"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.7">
+        app:layout_constraintVertical_bias="0.49">
 
         <include
+
             layout="@layout/qr_scanner"
-            tools:ignore="MissingConstraints"
-            tools:layout_editor_absoluteX="176dp"
-            tools:layout_editor_absoluteY="0dp" />
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:ignore="MissingConstraints" />
 
     </android.support.constraint.ConstraintLayout>
 
-    <android.support.design.widget.BottomNavigationView
-        android:id="@+id/navigation"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="0dp"
-        android:layout_marginEnd="0dp"
-        android:background="?android:attr/windowBackground"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:menu="@menu/navigation"
-        >
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    </android.support.design.widget.BottomNavigationView>
+        <android.support.design.widget.BottomNavigationView
+            android:id="@+id/navigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?android:attr/windowBackground"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:menu="@menu/navigation">
+
+            <include
+                layout="@layout/top_bar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:layout_editor_absoluteY="409dp" />
+
+        </android.support.design.widget.BottomNavigationView>
+    </android.support.constraint.ConstraintLayout>
 
 
-
-
-</android.support.constraint.ConstraintLayout>
+</LinearLayout>

@@ -26,6 +26,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -74,6 +75,13 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        try
+        {
+            this.getSupportActionBar().hide();
+        }
+        catch (NullPointerException e){}
         setContentView(R.layout.map_page);
         BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
@@ -90,7 +98,6 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
 
 
 
-
         fusedLocationClient.requestLocationUpdates(locationRequest,
                 new LocationCallback(){
                     @Override
@@ -104,20 +111,14 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
 
                             SupportMapFragment mapFragment =
                                     (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map_view);
-                            mapFragment.getMapAsync(MapPage.this::onMapReady);
+                            mapFragment.getMapAsync(MapPage.this);
                             mapInit = true;
                         }
                     };
 
 
                 },
-                null /* Looper */).addOnCompleteListener(new OnCompleteListener<Void>() {
-
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                Log.i(":)",""+task.isSuccessful());
-            }
-        });
+                null /* Looper */).addOnCompleteListener(task -> Log.i(":)",""+task.isSuccessful()));
 
 
 
@@ -149,49 +150,45 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
         String lanSettings = prefs.getString("token", null);
 
         try {
-            helper.getPathBoards(lanSettings, new ApiRequestListener() {
+            helper.getPathBoards(lanSettings, boardsList -> {
+                boardsListing = boardsList;
+                runOnUiThread(() -> {
+                    for (BoardModel board : boardsList) {
+                        LatLng latLng = new LatLng(board.getLatitude(), board.getLongitude());
 
-                @Override
-                public void apiResult(List<BoardModel> boardsList) {
-                    boardsListing = boardsList;
-                    runOnUiThread(() -> {
-                        for (BoardModel board : boardsList) {
-                            LatLng latLng = new LatLng(board.getLatitude(), board.getLongitude());
+                        MarkerOptions markerOptions = new MarkerOptions();
 
-                            MarkerOptions markerOptions = new MarkerOptions();
+                        markerOptions.position(latLng);
+                        Toast tt = Toast.makeText(findViewById(R.id.map_view).getContext(), "board", Toast.LENGTH_SHORT);
 
-                            markerOptions.position(latLng);
-                            Toast tt = Toast.makeText(findViewById(R.id.map_view).getContext(), "board", Toast.LENGTH_SHORT);
+                        tt.show();
+                        markerOptions.title(board.getName());
 
-                            tt.show();
-                            markerOptions.title(board.getName());
+                        Random rnd = new Random();
+                        int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
 
-                            Random rnd = new Random();
-                            int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+                        map.addCircle(new CircleOptions()
+                                .center(latLng)
+                                .radius(100)
+                                .strokeColor(color)
+                                .fillColor(adjustAlpha(Color.TRANSPARENT, 0.5f)));
+                        Marker locationMarker = map.addMarker(markerOptions);
+                        locationMarker.showInfoWindow();
 
-                            map.addCircle(new CircleOptions()
-                                    .center(latLng)
-                                    .radius(100)
-                                    .strokeColor(color)
-                                    .fillColor(adjustAlpha(Color.TRANSPARENT, 0.5f)));
-                            Marker locationMarker = map.addMarker(markerOptions);
-                            locationMarker.showInfoWindow();
-
-                        }
-                        if (ActivityCompat.checkSelfPermission(findViewById(R.id.boardsListView).getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(findViewById(R.id.boardsListView).getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                            CheckPermissions();
-                            return;
-                        }
+                    }
+                    if (ActivityCompat.checkSelfPermission(findViewById(R.id.boardsListView).getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(findViewById(R.id.boardsListView).getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        CheckPermissions();
+                        return;
+                    }
 
 
 
-                        UpdateDistances(boardsList);
-                        handler.post(runnable);
+                    UpdateDistances(boardsList);
+                    handler.post(runnable);
 
 
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18.0f));
-                    });
-                }
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18.0f));
+                });
             });
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -204,9 +201,7 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
     private Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            runOnUiThread(() -> {
-                UpdateDistances(boardsListing);
-            });
+            runOnUiThread(() -> UpdateDistances(boardsListing));
             handler.postDelayed(runnable, 15000);
         }
     };
@@ -234,28 +229,25 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
             return;
         }
         fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            latLng = new LatLng(location.getLatitude(), location.getLongitude());
+                .addOnSuccessListener(this, location -> {
+                    // Got last known location. In some rare situations this can be null.
+                    if (location != null) {
+                        latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
-                            CustomAdapter customAdapter = new CustomAdapter(boardsList, latLng ,boardsListView.getContext().getApplicationContext());
+                        CustomAdapter customAdapter = new CustomAdapter(boardsList, latLng ,boardsListView.getContext().getApplicationContext());
 
 
 
-                            boardsListView.setAdapter(customAdapter);
-                            boardsListView.setOnItemClickListener((parent, view, position, id)-> {
-                                BoardModel board = customAdapter.getById(position);
-                                Intent it = new Intent(MapPage.this, ARPage.class);
-                                it.putExtra("boardId", board.getBoardId());
-                                it.putExtra("latlng", latLng.latitude + ";" + latLng.longitude);
+                        boardsListView.setAdapter(customAdapter);
+                        boardsListView.setOnItemClickListener((parent, view, position, id)-> {
+                            BoardModel board = customAdapter.getById(position);
+                            Intent it = new Intent(MapPage.this, ARPage.class);
+                            it.putExtra("boardId", board.getBoardId());
+                            it.putExtra("latlng", latLng.latitude + ";" + latLng.longitude);
 
-                                startActivity(it);
+                            startActivity(it);
 
-                            });
-                        }
+                        });
                     }
                 });
 
@@ -268,16 +260,13 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+            if (!ActivityCompat.shouldShowRequestPermissionRationale(this,
                     Manifest.permission.ACCESS_FINE_LOCATION)) {
+                        ActivityCompat.requestPermissions(this,
+                                new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                25);
 
-            } else {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        2);
-
-            }
-        } else {
+                    }
         }
 
 
@@ -287,24 +276,42 @@ public class MapPage extends AppCompatActivity implements OnMapReadyCallback {
 
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.navigation_home:
-                    Intent it = new Intent(findViewById(R.id.map_view).getContext(), MainPage.class);
-                    startActivity(it);
-                    return true;
-                case R.id.navigation_dashboard:
-                    return true;
-                case R.id.navigation_notifications:
+            = item -> {
+                switch (item.getItemId()) {
+                    case R.id.navigation_home:
+                        Intent it = new Intent(findViewById(R.id.map_view).getContext(), MainPage.class);
+                        startActivity(it);
+                        return true;
+                    case R.id.navigation_dashboard:
+                        return true;
 
+                }
+                return false;
 
+            };
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case 25: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if(!getIntent().getBooleanExtra("restarted", false)){
+                        Intent intent = getIntent();
+                        finish();
+                        intent.putExtra("restarted", true);
+                        startActivity(intent);
+                    }
 
-                    return true;
+                } else {
+                    ActivityCompat.requestPermissions(this,
+                            new String[]{Manifest.permission.CAMERA},26
+                    );
+
+                }
             }
-            return false;
 
         }
-    };
+    }
 }

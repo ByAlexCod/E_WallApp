@@ -1,13 +1,33 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="500dp"
+    android:layout_width="400dp"
     android:layout_height="500dp"
     android:background="@color/colorPrimary"
-    android:backgroundTint="@color/colorAccent">
+    android:backgroundTint="@android:color/transparent"
+    android:orientation="vertical">
 
+
+    <include
+        layout="@layout/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="50dp" />
+
+    <TextView
+        android:id="@+id/_boardNameAr"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/common_google_signin_btn_text_dark_focused"
+        android:backgroundTint="@color/common_google_signin_btn_text_dark_focused"
+        android:text="Board's name"
+        android:textAlignment="center"
+        android:textColor="@color/common_google_signin_btn_text_dark_default"
+        android:textSize="24sp" />
 
     <ListView
         android:id="@+id/_messagesList"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:background="#aaff752a">
+
+    </ListView>
 </LinearLayout>

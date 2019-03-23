@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.PointF;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -17,6 +18,7 @@ import android.util.Log;
 import android.util.Size;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,16 +49,13 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
             switch (item.getItemId()) {
                 case R.id.navigation_home:
                     layout.setVisibility(LinearLayout.VISIBLE);
-                    mTextMessage.setText(R.string.title_home);
+                    mTextMessage.setText("Scan new invitation");
                     return true;
                 case R.id.navigation_dashboard:
                     ToMap tm = new ToMap();
                     tm.run();
                     return true;
-                case R.id.navigation_notifications:
-                    Intent it = new Intent(MainPage.this, CalibrationPage.class);
-                    startActivity(it);
-                    return true;
+
             }
             return false;
 
@@ -102,6 +101,14 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        try
+        {
+            this.getSupportActionBar().hide();
+        }
+        catch (NullPointerException e){}
         setContentView(activity_main_page);
         ctx = this;
         resp = findViewById(R.id.resp);
@@ -188,8 +195,12 @@ public class MainPage extends AppCompatActivity implements QRCodeReaderView.OnQR
     private void updateTextureViewSize(int viewWidth, int viewHeight) {
         Log.d("TEXTURE SIZE", "TextureView Width : " + viewWidth + " TextureView Height : " + viewHeight);
         ViewGroup.LayoutParams params = layout.getLayoutParams();
-        params.height = viewHeight /2;
-        params.width = viewWidth /2;
+        double height = viewHeight /1.45;
+        double width = viewWidth /1.45;
+        params.height = Integer.parseInt(String.valueOf(Math.round(height)));
+        params.width = Integer.parseInt(String.valueOf(Math.round(width)));
+
+
         layout.setLayoutParams(params);
     }
 
